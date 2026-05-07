@@ -4,6 +4,12 @@
     <ProjectReference Include="..\SmartLeave.Domain\SmartLeave.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\LeaveBalance\" />
+    <Folder Include="DTOs\LeaveRequest\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
