@@ -10,8 +10,24 @@ using SmartLeave.Application.Validators;
 using SmartLeave.Infrastructure.Persistence;
 using SmartLeave.Infrastructure.Services;
 using System.Text;
+using Serilog;
+
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File(
+        path: "logs/smartleave-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -91,6 +107,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
+app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging();
 app.UseCors(AngularCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
