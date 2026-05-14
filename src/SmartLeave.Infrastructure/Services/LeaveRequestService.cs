@@ -30,10 +30,10 @@ public class LeaveRequestService : ILeaveRequestService
                 b.Year == DateTime.UtcNow.Year, ct);
 
         if (balance == null)
-            throw new Exception("No leave balance found for this leave type.");
+            throw new KeyNotFoundException("No leave balance found for this leave type.");
 
         if (balance.RemainingDays < totalDays)
-            throw new Exception($"Insufficient leave balance. You have {balance.RemainingDays} days remaining.");
+            throw new ArgumentException("Insufficient leave balance. You have {balance.RemainingDays} days remaining.");
 
         // Check for overlapping requests
         var hasOverlap = await _context.LeaveRequests
@@ -116,10 +116,10 @@ public class LeaveRequestService : ILeaveRequestService
             .FirstOrDefaultAsync(r => r.Id == requestId, ct);
 
         if (request == null)
-            throw new Exception("Leave request not found.");
+            throw new KeyNotFoundException("Leave request not found.");
 
         if (request.Status != LeaveStatus.Pending)
-            throw new Exception("This request has already been reviewed.");
+            throw new ArgumentException("This request has already been reviewed.");
 
         request.Status = dto.IsApproved ? LeaveStatus.Approved : LeaveStatus.Rejected;
         request.ManagerNote = dto.ManagerNote;
@@ -151,7 +151,7 @@ public class LeaveRequestService : ILeaveRequestService
             throw new Exception("Leave request not found.");
 
         if (request.Status != LeaveStatus.Pending)
-            throw new Exception("Only pending requests can be cancelled.");
+            throw new ArgumentException("Only pending requests can be cancelled.");
 
         request.Status = LeaveStatus.Cancelled;
         request.UpdatedAt = DateTime.UtcNow;

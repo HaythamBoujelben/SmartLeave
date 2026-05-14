@@ -25,24 +25,18 @@ public class LeaveRequestController : ControllerBase
 
     // Employee: submit a leave request
     [HttpPost]
-    public async Task<IActionResult> Create(CreateLeaveRequestDto dto,CancellationToken ct)
+    public async Task<IActionResult> Create(CreateLeaveRequestDto dto, CancellationToken ct)
     {
-        try
-        {
-            var result = await _leaveRequestService.CreateAsync(GetCurrentUserId(), dto,ct);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+
+        var result = await _leaveRequestService.CreateAsync(GetCurrentUserId(), dto, ct);
+        return Ok(result);
     }
 
     // Employee: get my own requests
     [HttpGet("my")]
     public async Task<IActionResult> GetMyRequests(CancellationToken ct)
     {
-        var result = await _leaveRequestService.GetMyRequestsAsync(GetCurrentUserId(),ct);
+        var result = await _leaveRequestService.GetMyRequestsAsync(GetCurrentUserId(), ct);
         return Ok(result);
     }
 
@@ -60,29 +54,18 @@ public class LeaveRequestController : ControllerBase
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Review(Guid id, ReviewLeaveRequestDto dto)
     {
-        try
-        {
-            await _leaveRequestService.ReviewAsync(id, GetCurrentUserId(), dto);
-            return Ok(new { message = "Request reviewed successfully." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+
+        await _leaveRequestService.ReviewAsync(id, GetCurrentUserId(), dto);
+        return Ok(new { message = "Request reviewed successfully." });
     }
 
     // Employee: cancel own request
     [HttpPut("{id}/cancel")]
     public async Task<IActionResult> Cancel(Guid id)
     {
-        try
-        {
-            await _leaveRequestService.CancelAsync(id, GetCurrentUserId());
-            return Ok(new { message = "Request cancelled." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+
+        await _leaveRequestService.CancelAsync(id, GetCurrentUserId());
+        return Ok(new { message = "Request cancelled." });
+
     }
 }
