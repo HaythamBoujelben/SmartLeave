@@ -66,6 +66,7 @@ public class LeaveRequestService : ILeaveRequestService
     public async Task<List<LeaveRequestDto>> GetMyRequestsAsync(Guid employeeId, CancellationToken ct = default)
     {
         return await _context.LeaveRequests
+            .AsNoTracking()
             .Include(r => r.Employee)
             .Include(r => r.LeaveType)
             .Where(r => r.EmployeeId == employeeId)
@@ -89,6 +90,7 @@ public class LeaveRequestService : ILeaveRequestService
     public async Task<List<LeaveRequestDto>> GetAllPendingAsync(CancellationToken ct = default)
     {
         return await _context.LeaveRequests
+            .AsNoTracking()
             .Include(r => r.Employee)
             .Include(r => r.LeaveType)
             .Where(r => r.Status == LeaveStatus.Pending)
