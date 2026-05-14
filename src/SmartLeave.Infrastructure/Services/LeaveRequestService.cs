@@ -17,7 +17,7 @@ public class LeaveRequestService : ILeaveRequestService
         _context = context;
     }
 
-    public async Task<LeaveRequestDto> CreateAsync(Guid employeeId, CreateLeaveRequestDto dto)
+    public async Task<LeaveRequestDto> CreateAsync(Guid employeeId, CreateLeaveRequestDto dto,CancellationToken ct = default)
     {
         // Calculate total days
         var totalDays = (int)(dto.EndDate.Date - dto.StartDate.Date).TotalDays + 1;
@@ -27,7 +27,7 @@ public class LeaveRequestService : ILeaveRequestService
             .FirstOrDefaultAsync(b =>
                 b.EmployeeId == employeeId &&
                 b.LeaveTypeId == dto.LeaveTypeId &&
-                b.Year == DateTime.UtcNow.Year);
+                b.Year == DateTime.UtcNow.Year, ct);
 
         if (balance == null)
             throw new Exception("No leave balance found for this leave type.");
@@ -58,12 +58,12 @@ public class LeaveRequestService : ILeaveRequestService
         };
 
         _context.LeaveRequests.Add(request);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
 
-        return await MapToDto(request.Id);
+        return await MapToDto(request.Id,ct);
     }
 
-    public async Task<List<LeaveRequestDto>> GetMyRequestsAsync(Guid employeeId)
+    public async Task<List<LeaveRequestDto>> GetMyRequestsAsync(Guid employeeId, CancellationToken ct = default)
     {
         return await _context.LeaveRequests
             .Include(r => r.Employee)
@@ -83,10 +83,10 @@ public class LeaveRequestService : ILeaveRequestService
                 ManagerNote = r.ManagerNote,
                 CreatedAt = r.CreatedAt
             })
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
-    public async Task<List<LeaveRequestDto>> GetAllPendingAsync()
+    public async Task<List<LeaveRequestDto>> GetAllPendingAsync(CancellationToken ct = default)
     {
         return await _context.LeaveRequests
             .Include(r => r.Employee)
@@ -106,14 +106,14 @@ public class LeaveRequestService : ILeaveRequestService
                 ManagerNote = r.ManagerNote,
                 CreatedAt = r.CreatedAt
             })
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
-    public async Task ReviewAsync(Guid requestId, Guid managerId, ReviewLeaveRequestDto dto)
+    public async Task ReviewAsync(Guid requestId, Guid managerId, ReviewLeaveRequestDto dto,CancellationToken ct = default)
     {
         var request = await _context.LeaveRequests
             .Include(r => r.Employee)
-            .FirstOrDefaultAsync(r => r.Id == requestId);
+            .FirstOrDefaultAsync(r => r.Id == requestId, ct);
 
         if (request == null)
             throw new Exception("Leave request not found.");
@@ -133,19 +133,19 @@ public class LeaveRequestService : ILeaveRequestService
                 .FirstOrDefaultAsync(b =>
                     b.EmployeeId == request.EmployeeId &&
                     b.LeaveTypeId == request.LeaveTypeId &&
-                    b.Year == DateTime.UtcNow.Year);
+                    b.Year == DateTime.UtcNow.Year, ct); 
 
             if (balance != null)
                 balance.UsedDays += request.TotalDays;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task CancelAsync(Guid requestId, Guid employeeId)
+    public async Task CancelAsync(Guid requestId, Guid employeeId, CancellationToken ct = default)
     {
         var request = await _context.LeaveRequests
-            .FirstOrDefaultAsync(r => r.Id == requestId && r.EmployeeId == employeeId);
+            .FirstOrDefaultAsync(r => r.Id == requestId && r.EmployeeId == employeeId,ct);
 
         if (request == null)
             throw new Exception("Leave request not found.");
@@ -156,15 +156,15 @@ public class LeaveRequestService : ILeaveRequestService
         request.Status = LeaveStatus.Cancelled;
         request.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
-    private async Task<LeaveRequestDto> MapToDto(Guid requestId)
+    private async Task<LeaveRequestDto> MapToDto(Guid requestId, CancellationToken ct = default)
     {
         var r = await _context.LeaveRequests
             .Include(x => x.Employee)
             .Include(x => x.LeaveType)
-            .FirstAsync(x => x.Id == requestId);
+            .FirstAsync(x => x.Id == requestId, ct);
 
         return new LeaveRequestDto
         {

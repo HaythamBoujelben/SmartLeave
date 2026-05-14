@@ -25,11 +25,11 @@ public class LeaveRequestController : ControllerBase
 
     // Employee: submit a leave request
     [HttpPost]
-    public async Task<IActionResult> Create(CreateLeaveRequestDto dto)
+    public async Task<IActionResult> Create(CreateLeaveRequestDto dto,CancellationToken ct)
     {
         try
         {
-            var result = await _leaveRequestService.CreateAsync(GetCurrentUserId(), dto);
+            var result = await _leaveRequestService.CreateAsync(GetCurrentUserId(), dto,ct);
             return Ok(result);
         }
         catch (Exception ex)
@@ -40,9 +40,9 @@ public class LeaveRequestController : ControllerBase
 
     // Employee: get my own requests
     [HttpGet("my")]
-    public async Task<IActionResult> GetMyRequests()
+    public async Task<IActionResult> GetMyRequests(CancellationToken ct)
     {
-        var result = await _leaveRequestService.GetMyRequestsAsync(GetCurrentUserId());
+        var result = await _leaveRequestService.GetMyRequestsAsync(GetCurrentUserId(),ct);
         return Ok(result);
     }
 
